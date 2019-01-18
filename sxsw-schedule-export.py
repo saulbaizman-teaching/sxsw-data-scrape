@@ -43,14 +43,16 @@ soup_html = BeautifulSoup(str(raw_soup).replace('<br/>', delimiter), features="h
 
 events = soup_html.find_all("div", class_="single-event")
 
+# print column headings
 if export:
 	column_headings = ['number','title','date','time','location','room number','address','track','format','type']
 	print delimiter.join(str(heading) for heading in column_headings)
 
-
+# loop through events
 for event in range(len(events)):
+	event_index = event+1
 	if not export:
-		print (event+1)
+		print event_index
 	event_title = events[event].h4.text
 	title = event_title.encode('utf-8', 'ignore')
 	if not export:
@@ -64,22 +66,16 @@ for event in range(len(events)):
 		print date
 		print time
 
-	#venue_info_string = str ( event_details[1] )
-	#venue_info_string = venue_info_string.replace('<br/>', delimiter)
-	#print venue_info_string
-	#venue_info = venue_info_string.split(delimiter)
 	venue_info = event_details[1].text.split(delimiter)
-	#location = venue_info[0]
 	location = event_details[1].a.extract()
 	loc = location.text.encode('utf-8', 'ignore')
-	#room = venue_info[1]
+	if not export:
+		print loc
 	try:
 		room = event_details[1].a.extract()
 	except AttributeError:
 		room_number = '(None)'
 	street = event_details[1].text[1:]
-	if not export:
-		print loc
 	try:
 		room_number = room.text.encode('utf-8', 'ignore')
 		if not export:
@@ -101,9 +97,11 @@ for event in range(len(events)):
 		print format
 		print type
 
-	items = [(event+1),title,date,time,loc,room_number,address,track,format,type]
-	print delimiter.join(str(column) for column in items)
+	if export:
+		items = [event_index,title,date,time,loc,room_number,address,track,format,type]
+		print delimiter.join(str(column) for column in items)
 
+	# print empty line
 	if not export:
 		print 
 
