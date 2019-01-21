@@ -30,7 +30,7 @@ days = range (8,17)
 # just print the lines for export to Excel
 export = True
 
-schedule_url = 'https://schedule.sxsw.com/2019/03/08/events'
+schedule_url = 'https://schedule.sxsw.com/2019/events/track/Design'
 
 socket = urllib.urlopen(schedule_url)
 schedule_html = socket.read()
@@ -45,7 +45,7 @@ events = soup_html.find_all("div", class_="single-event")
 
 # print column headings
 if export:
-	column_headings = ['number','title','date','time','location','room number','address','track','format','type']
+	column_headings = ['number','title','sponsor','date','time','location','room number','address','track','format','type']
 	print delimiter.join(str(heading) for heading in column_headings)
 
 # loop through events
@@ -54,21 +54,34 @@ for event in range(len(events)):
 	if not export:
 		print event_index
 	event_title = events[event].h4.text
+	try:
+		presented_by = events[event].h5.text
+		sponsor = presented_by.encode('utf-8', 'ignore')[:-1]
+	except AttributeError:
+		sponsor = ''
 	title = event_title.encode('utf-8', 'ignore')
 	if not export:
 		print title
+		print sponsor
 
 	event_details = events[event].find_all("div",class_="text-tiny")
 	date_and_time = event_details[0].text.split(delimiter)
 	date = date_and_time[0].encode('utf-8', 'ignore')
-	time = date_and_time[1].encode('utf-8', 'ignore')
+	try:
+		time = date_and_time[1].encode('utf-8', 'ignore')
+	except IndexError:
+		time = 'TBA'
 	if not export:
 		print date
 		print time
 
 	venue_info = event_details[1].text.split(delimiter)
-	location = event_details[1].a.extract()
-	loc = location.text.encode('utf-8', 'ignore')
+	try:
+		location = event_details[1].a.extract()
+	except AttributeError:
+		location = 'Venue TBA'
+	if location != 'Venue TBA':
+		loc = location.text.encode('utf-8', 'ignore')
 	if not export:
 		print loc
 	try:
@@ -98,7 +111,7 @@ for event in range(len(events)):
 		print type
 
 	if export:
-		items = [event_index,title,date,time,loc,room_number,address,track,format,type]
+		items = [event_index,title,sponsor,date,time,loc,room_number,address,track,format,type]
 		print delimiter.join(str(column) for column in items)
 
 	# print empty line
